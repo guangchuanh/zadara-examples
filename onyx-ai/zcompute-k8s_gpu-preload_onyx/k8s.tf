@@ -161,21 +161,21 @@ module "k8s" {
         }
         persistentVolume = { enabled = true, size = "200Gi" }
         runtimeClassName = "nvidia"
-        affinity = {
-          nodeAffinity = {
-            requiredDuringSchedulingIgnoredDuringExecution = {
-              nodeSelectorTerms = [
-                {
-                  matchExpressions = [{
-                    key      = "nvidia.com/device-plugin.config"
-                    operator = "In"
-                    values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
-                  }]
-                }
-              ]
-            }
-          }
-        }
+#        affinity = {
+#          nodeAffinity = {
+#            requiredDuringSchedulingIgnoredDuringExecution = {
+#              nodeSelectorTerms = [
+#                {
+#                  matchExpressions = [{
+#                    key      = "nvidia.com/device-plugin.config"
+#                    operator = "In"
+#                    values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
+#                  }]
+#                }
+#              ]
+#            }
+#          }
+#        }
       }
     }
     onyx = {
@@ -192,13 +192,13 @@ module "k8s" {
         inference = {
           tolerations      = [{ effect = "NoSchedule", operator = "Exists", key = "nvidia.com/gpu" }]
           runtimeClassName = "nvidia"
-          affinity = { nodeAffinity = { requiredDuringSchedulingIgnoredDuringExecution = { nodeSelectorTerms = [
-            { matchExpressions = [{
-              key      = "nvidia.com/device-plugin.config"
-              operator = "In"
-              values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
-              }]
-          }] } } }
+#          affinity = { nodeAffinity = { requiredDuringSchedulingIgnoredDuringExecution = { nodeSelectorTerms = [
+#            { matchExpressions = [{
+#              key      = "nvidia.com/device-plugin.config"
+#              operator = "In"
+#              values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
+#              }]
+#          }] } } }
           resources = {
             requests = { "nvidia.com/gpu" = "4" }
             limits   = { "nvidia.com/gpu" = "4" }
@@ -207,13 +207,13 @@ module "k8s" {
         index = {
           tolerations      = [{ effect = "NoSchedule", operator = "Exists", key = "nvidia.com/gpu" }]
           runtimeClassName = "nvidia"
-          affinity = { nodeAffinity = { requiredDuringSchedulingIgnoredDuringExecution = { nodeSelectorTerms = [
-            { matchExpressions = [{
-              key      = "nvidia.com/device-plugin.config"
-              operator = "In"
-              values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
-              }]
-          }] } } }
+#          affinity = { nodeAffinity = { requiredDuringSchedulingIgnoredDuringExecution = { nodeSelectorTerms = [
+#            { matchExpressions = [{
+#              key      = "nvidia.com/device-plugin.config"
+#              operator = "In"
+#              values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
+#              }]
+#          }] } } }
           resources = {
             requests = { "nvidia.com/gpu" = "4" }
             limits   = { "nvidia.com/gpu" = "4" }
