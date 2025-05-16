@@ -181,8 +181,10 @@ module "k8s" {
     onyx = {
       order           = 35
       wait            = false
-      repository_name = "zadarastorage"
-      repository_url  = "https://zadarastorage.github.io/helm-charts"
+      repository_name = "guangchuanh"
+      repository_url  = "https://guangchuanh.github.io/helm-charts"
+      # repository_name = "zadarastorage"
+      # repository_url  = "https://zadarastorage.github.io/helm-charts"
       chart           = "onyx"
       version         = "0.0.13"
       namespace       = "onyx"
