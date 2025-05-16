@@ -41,6 +41,8 @@ This script will download terraform(if not found), initialize the project folder
 ```
 ./cleanup.sh <folder-name>
 ```
+まず、k8sが作成したELBとセキュリティグループをGUIから削除した後cleanup.shを実行すること。
+
 This script is meant to help with the teardown of a deployed project, it will require user confirmation and is only capable of destroying resources created by Terraform. Resources created by Kubernetes operators may prevent this script from completing successfully on the first try.
 
 Further notes about using this exist within each project doc.
