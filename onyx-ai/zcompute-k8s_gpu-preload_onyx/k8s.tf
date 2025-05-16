@@ -290,7 +290,8 @@ module "k8s" {
       max_size         = 3
       desired_size     = 1
       root_volume_size = 200
-      instance_type    = "A02.4xLarge" # TODO Adjust to formalized instance_type name
+      instance_type    = "z8.3xlarge"
+      # instance_type    = "A02.4xLarge" # TODO Adjust to formalized instance_type name
       k8s_taints = {
         "nvidia.com/gpu" = "true:NoSchedule"
       }
