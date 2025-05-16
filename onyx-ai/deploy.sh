@@ -37,7 +37,11 @@ cd "${1}"
 
 for x in 'init' 'validate' 'plan' 'apply'; do
 	echo "== terraform ${x}"
-	terraform ${x}
+ 　　　　if [ ${x} = 'apply' ]; then
+        	terraform ${x} -auto-approve
+	else
+ 		terraform ${x} 
+   	fi
 	RES=$?
 	[ $RES -ne 0 ] && echo "Error: 'terraform ${x}' returned ${RES}" && exit 1
 done
