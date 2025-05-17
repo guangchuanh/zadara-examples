@@ -39,7 +39,7 @@ cd "${1}"
 # Probably need to run a second time after manually destroying the LB
 for x in 'destroy'; do
 	echo "== terraform ${x}"
-	terraform ${x}
+	terraform ${x} -auto-approve
 	RES=$?
 	[ $RES -ne 0 ] && echo "Error: 'terraform ${x}' returned ${RES}" && exit 1
 done

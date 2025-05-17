@@ -16,6 +16,7 @@ variable "k8s_version" {
 module "k8s" {
   #source = "../../../terraform-zcompute-k8s"
   source = "github.com/zadarastorage/terraform-zcompute-k8s?ref=main"
+  # source = "github.com/guangchuanh/terraform-zcompute-k8s?ref=main"
   # It's recommended to change `main` to a specific release version to prevent unexpected changes
 
   vpc_id  = module.vpc.vpc_id
@@ -26,87 +27,6 @@ module "k8s" {
   cluster_name    = var.k8s_name
   cluster_version = var.k8s_version
   cluster_helm = {
-    gpu-operator = {
-      order           = 30
-      wait            = true
-      repository_name = "nvidia"
-      repository_url  = "https://helm.ngc.nvidia.com/nvidia"
-      chart           = "gpu-operator"
-      version         = "v24.6.1"
-      namespace       = "gpu-operator"
-      config = {
-        driver = {
-          enabled   = true
-          resources = { requests = { cpu = "0.01", memory : "6Gi" } }
-        }
-        toolkit = { enabled = true }
-        devicePlugin = {
-          config = {
-            create  = true
-            name    = "device-plugin-configs"
-            default = "any"
-            data = {
-              # Tesla A16
-              tesla-25b6 = yamlencode({
-                version = "v1"
-                flags   = { migStrategy = "none" }
-                sharing = { timeSlicing = {
-                  failRequestsGreaterThanOne = false
-                  resources                  = [{ name = "nvidia.com/gpu", replicas = 17 }]
-                } }
-              })
-              # Tesla A40
-              tesla-2235 = yamlencode({
-                version = "v1"
-                flags   = { migStrategy = "none" }
-                sharing = { timeSlicing = {
-                  failRequestsGreaterThanOne = false
-                  resources                  = [{ name = "nvidia.com/gpu", replicas = 49 }]
-                } }
-              })
-              # Tesla L4
-              tesla-27b8 = yamlencode({
-                version = "v1"
-                flags   = { migStrategy = "none" }
-                sharing = { timeSlicing = {
-                  failRequestsGreaterThanOne = false
-                  resources                  = [{ name = "nvidia.com/gpu", replicas = 25 }]
-                } }
-              })
-              # Tesla L40S
-              tesla-26b9 = yamlencode({
-                version = "v1"
-                flags   = { migStrategy = "none" }
-                sharing = { timeSlicing = {
-                  failRequestsGreaterThanOne = false
-                  resources                  = [{ name = "nvidia.com/gpu", replicas = 49 }]
-                } }
-              })
-            }
-          }
-        }
-        nfd = { enabled = true }
-        node-feature-discovery = {
-          worker = {
-            config = {
-              sources = {
-                custom = [{
-                  name           = "gpu-timeslice"
-                  labelsTemplate = "{{ range .pci.device }}nvidia.com/device-plugin.config=tesla-{{ .device }}{{ end }}"
-                  matchFeatures = [{
-                    feature = "pci.device"
-                    matchExpressions = {
-                      class  = { op = "InRegexp", value = ["^03"] }
-                      vendor = ["10de"]
-                    }
-                  }]
-                }]
-              }
-            }
-          }
-        }
-      }
-    }
     cert-manager = {
       order           = 31
       wait            = true
@@ -147,8 +67,10 @@ module "k8s" {
       namespace       = "ollama"
       config = {
         ollama = {
-          gpu    = { enabled = true, type = "nvidia" }
-          models = { pull = ["llama3.1:8b-instruct-q8_0"], run = ["llama3.1:8b-instruct-q8_0"] }
+          # gpu    = { enabled = true, type = "nvidia" }
+          gpu    = { enabled = false, type = "nvidia" }
+          # models = { pull = ["llama3.1:8b-instruct-q8_0"], run = ["llama3.1:8b-instruct-q8_0"] }
+          models = { pull = [""], run = [""] }
         }
         replicaCount = 1
         extraEnv = [{
@@ -156,31 +78,37 @@ module "k8s" {
           value = "-1"
         }]
         resources = {
-          requests = { cpu = "4", memory = "15Gi", "nvidia.com/gpu" = "8" }
-          limits   = { cpu = "8", memory = "20Gi", "nvidia.com/gpu" = "8" }
+          # requests = { cpu = "4", memory = "15Gi", "nvidia.com/gpu" = "8" }
+          # limits   = { cpu = "8", memory = "20Gi", "nvidia.com/gpu" = "8" }
+          requests = { cpu = "4", memory = "15Gi" }
+          limits   = { cpu = "8", memory = "20Gi" }
         }
         persistentVolume = { enabled = true, size = "200Gi" }
-        runtimeClassName = "nvidia"
-#        affinity = {
-#          nodeAffinity = {
-#            requiredDuringSchedulingIgnoredDuringExecution = {
-#              nodeSelectorTerms = [
-#                {
-#                  matchExpressions = [{
-#                    key      = "nvidia.com/device-plugin.config"
-#                    operator = "In"
-#                    values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
-#                  }]
-#                }
-#              ]
-#            }
-#          }
-#        }
+        # runtimeClassName = "nvidia"
+        runtimeClassName = ""
+        # affinity = {
+        #   nodeAffinity = {
+        #     requiredDuringSchedulingIgnoredDuringExecution = {
+        #       nodeSelectorTerms = [
+        #         {
+        #           matchExpressions = [{
+        #             key      = "nvidia.com/device-plugin.config"
+        #             operator = "In"
+        #             values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
+        #           }]
+        #         }
+        #       ]
+        #     }
+        #   }
+        # }
       }
     }
     onyx = {
       order           = 35
       wait            = false
+      # repository_name = "onyx-dot-app"
+      # repository_url  = "https://github.com/onyx-dot-app/onyx/tree/main/deployment/helm/charts"
+      # version         = "0.2.1"
       repository_name = "guangchuanh"
       repository_url  = "https://guangchuanh.github.io/helm-charts"
       # repository_name = "zadarastorage"
@@ -190,33 +118,45 @@ module "k8s" {
       namespace       = "onyx"
       config = {
         inference = {
-          tolerations      = [{ effect = "NoSchedule", operator = "Exists", key = "nvidia.com/gpu" }]
-          runtimeClassName = "nvidia"
-#          affinity = { nodeAffinity = { requiredDuringSchedulingIgnoredDuringExecution = { nodeSelectorTerms = [
-#            { matchExpressions = [{
-#              key      = "nvidia.com/device-plugin.config"
-#              operator = "In"
-#              values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
-#              }]
-#          }] } } }
+          # tolerations      = [{ effect = "NoSchedule", operator = "Exists", key = "nvidia.com/gpu" }]
+          tolerations      = []
+          # runtimeClassName = "nvidia"
+          runtimeClassName = ""
+          # affinity = { nodeAffinity = { requiredDuringSchedulingIgnoredDuringExecution = { nodeSelectorTerms = [
+          #   { matchExpressions = [{
+          #     key      = "nvidia.com/device-plugin.config"
+          #     operator = "In"
+          #     values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
+          #     }]
+          # }] } } }
           resources = {
-            requests = { "nvidia.com/gpu" = "4" }
-            limits   = { "nvidia.com/gpu" = "4" }
+            requests = {}
+            limits = {}
           }
+          # resources = {
+          #   requests = { "nvidia.com/gpu" = "4" }
+          #   limits   = { "nvidia.com/gpu" = "4" }
+          # }
         }
         index = {
-          tolerations      = [{ effect = "NoSchedule", operator = "Exists", key = "nvidia.com/gpu" }]
-          runtimeClassName = "nvidia"
-#          affinity = { nodeAffinity = { requiredDuringSchedulingIgnoredDuringExecution = { nodeSelectorTerms = [
-#            { matchExpressions = [{
-#              key      = "nvidia.com/device-plugin.config"
-#              operator = "In"
-#              values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
-#              }]
-#          }] } } }
+          # tolerations      = [{ effect = "NoSchedule", operator = "Exists", key = "nvidia.com/gpu" }]
+          tolerations      = []
+          # runtimeClassName = "nvidia"
+          runtimeClassName = ""
+          # affinity = { nodeAffinity = { requiredDuringSchedulingIgnoredDuringExecution = { nodeSelectorTerms = [
+          #   { matchExpressions = [{
+          #     key      = "nvidia.com/device-plugin.config"
+          #     operator = "In"
+          #     values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
+          #     }]
+          # }] } } }
+          # resources = {
+          #   requests = { "nvidia.com/gpu" = "4" }
+          #   limits   = { "nvidia.com/gpu" = "4" }
+          # }
           resources = {
-            requests = { "nvidia.com/gpu" = "4" }
-            limits   = { "nvidia.com/gpu" = "4" }
+            requests = {}
+            limits = {}
           }
         }
         ingress = {
@@ -284,35 +224,35 @@ module "k8s" {
       desired_size  = 1
       instance_type = "z8.3xlarge"
     }
-    gpu = {
-      role             = "worker"
-      min_size         = 0
-      max_size         = 3
-      desired_size     = 1
-      root_volume_size = 200
-      instance_type    = "z8.3xlarge"
-      # instance_type    = "A02.4xLarge" # TODO Adjust to formalized instance_type name
-      k8s_taints = {
-        "nvidia.com/gpu" = "true:NoSchedule"
-      }
-      k8s_labels = {
-        "tesla-a16"                       = "true"
-        "nvidia.com/gpu"                  = "true"
-        "nvidia.com/device-plugin.config" = "tesla-25b6"
-        "nvidia.com/gpu.deploy.driver"    = "false"
-      }
-      tags = {
-        "k8s.io/cluster-autoscaler/node-template/resources/nvidia.com/gpu" = "17"
-        "nvidia.com/device-plugin.config"                                  = "tesla-25b6"
-      }
-      cloudinit_config = [
-        {
-          order        = 11
-          filename     = "setup-gpu.sh"
-          content_type = "text/x-shellscript"
-          content      = file("${path.module}/files/setup-gpu.sh")
-        }
-      ]
-    }
+    # gpu = {
+    #   role             = "worker"
+    #   min_size         = 0
+    #   max_size         = 3
+    #   desired_size     = 1
+    #   root_volume_size = 200
+    #   instance_type    = "z8.3xlarge"
+    #   # instance_type    = "A02.4xLarge" # TODO Adjust to formalized instance_type name
+    #   # k8s_taints = {
+    #   #   "nvidia.com/gpu" = "true:NoSchedule"
+    #   # }
+    #   k8s_labels = {
+    #     "tesla-a16"                       = "true"
+    #     "nvidia.com/gpu"                  = "true"
+    #     "nvidia.com/device-plugin.config" = "tesla-25b6"
+    #     "nvidia.com/gpu.deploy.driver"    = "false"
+    #   }
+    #   tags = {
+    #     "k8s.io/cluster-autoscaler/node-template/resources/nvidia.com/gpu" = "17"
+    #     "nvidia.com/device-plugin.config"                                  = "tesla-25b6"
+    #   }
+    #   # cloudinit_config = [
+    #   #   {
+    #   #     order        = 11
+    #   #     filename     = "setup-gpu.sh"
+    #   #     content_type = "text/x-shellscript"
+    #   #     content      = file("${path.module}/files/setup-gpu.sh")
+    #   #   }
+    #   # ]
+    # }
   }
 }
