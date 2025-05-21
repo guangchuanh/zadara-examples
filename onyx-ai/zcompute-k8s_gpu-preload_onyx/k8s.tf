@@ -15,8 +15,7 @@ variable "k8s_version" {
 
 module "k8s" {
   #source = "../../../terraform-zcompute-k8s"
-  # source = "github.com/zadarastorage/terraform-zcompute-k8s?ref=main"
-  source = "github.com/guangchuanh/terraform-zcompute-k8s?ref=main"
+  source = "github.com/zadarastorage/terraform-zcompute-k8s?ref=main"
   # It's recommended to change `main` to a specific release version to prevent unexpected changes
 
   vpc_id  = module.vpc.vpc_id
@@ -40,9 +39,8 @@ module "k8s" {
     cert-manager-clusterissuers = {
       order           = 32
       wait            = false
-      repository_name = "guangchuanh"
-      # repository_url  = "https://eric-zadara.github.io/helm_charts"
-      repository_url  = "https://guangchuanh.github.io/helm_charts"
+      repository_name = "eric-zadara"
+      repository_url  = "https://eric-zadara.github.io/helm_charts"
       chart           = "cert-manager-clusterissuers"
       version         = "0.0.1"
       namespace       = "cert-manager"
@@ -110,10 +108,10 @@ module "k8s" {
       # repository_name = "onyx-dot-app"
       # repository_url  = "https://github.com/onyx-dot-app/onyx/tree/main/deployment/helm/charts"
       # version         = "0.2.1"
-      repository_name = "guangchuanh"
-      repository_url  = "https://guangchuanh.github.io/helm-charts"
-      # repository_name = "zadarastorage"
-      # repository_url  = "https://zadarastorage.github.io/helm-charts"
+      #repository_name = "guangchuanh"
+      #repository_url  = "https://guangchuanh.github.io/helm-charts"
+      repository_name = "zadarastorage"
+      repository_url  = "https://zadarastorage.github.io/helm-charts"
       chart           = "onyx"
       version         = "0.0.13"
       namespace       = "onyx"
