@@ -40,8 +40,9 @@ module "k8s" {
     cert-manager-clusterissuers = {
       order           = 32
       wait            = false
-      repository_name = "eric-zadara"
-      repository_url  = "https://eric-zadara.github.io/helm_charts"
+      repository_name = "guangchuanh"
+      # repository_url  = "https://eric-zadara.github.io/helm_charts"
+      repository_url  = "https://guangchuanh.github.io/helm_charts"
       chart           = "cert-manager-clusterissuers"
       version         = "0.0.1"
       namespace       = "cert-manager"
@@ -215,7 +216,7 @@ module "k8s" {
       role         = "control"
       min_size     = 3
       max_size     = 3
-      desired_size = 3
+      desired_size = 1
     }
     worker = {
       role          = "worker"
