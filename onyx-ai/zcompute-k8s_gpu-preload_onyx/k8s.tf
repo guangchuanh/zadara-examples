@@ -15,8 +15,8 @@ variable "k8s_version" {
 
 module "k8s" {
   #source = "../../../terraform-zcompute-k8s"
-  source = "github.com/zadarastorage/terraform-zcompute-k8s?ref=main"
-  # source = "github.com/guangchuanh/terraform-zcompute-k8s?ref=main"
+  # source = "github.com/zadarastorage/terraform-zcompute-k8s?ref=main"
+  source = "github.com/guangchuanh/terraform-zcompute-k8s?ref=main"
   # It's recommended to change `main` to a specific release version to prevent unexpected changes
 
   vpc_id  = module.vpc.vpc_id
