@@ -66,10 +66,10 @@ module "k8s" {
       namespace       = "ollama"
       config = {
         ollama = {
-          # gpu    = { enabled = true, type = "nvidia" }
-          gpu    = { enabled = false, type = "nvidia" }
-          # models = { pull = ["llama3.1:8b-instruct-q8_0"], run = ["llama3.1:8b-instruct-q8_0"] }
-          models = { pull = [""], run = [""] }
+          gpu    = { enabled = true, type = "nvidia" }
+          # gpu    = { enabled = false, type = "nvidia" }
+          models = { pull = ["llama3.1:8b-instruct-q8_0"], run = ["llama3.1:8b-instruct-q8_0"] }
+          # models = { pull = [""], run = [""] }
         }
         replicaCount = 1
         extraEnv = [{
