@@ -110,13 +110,13 @@ module "k8s" {
       repository_url  = "https://guangchuanh.github.io/helm-charts"
       # repository_name = "zadarastorage"
       # repository_url  = "https://zadarastorage.github.io/helm-charts"
-      chart           = "onyx"
-      version         = "0.0.13"
-      namespace       = "onyx"
+      chart     = "onyx"
+      version   = "0.0.13"
+      namespace = "onyx"
       config = {
         inference = {
           # tolerations      = [{ effect = "NoSchedule", operator = "Exists", key = "nvidia.com/gpu" }]
-          tolerations      = []
+          tolerations = []
           # runtimeClassName = "nvidia"
           runtimeClassName = ""
           # affinity = { nodeAffinity = { requiredDuringSchedulingIgnoredDuringExecution = { nodeSelectorTerms = [
@@ -128,7 +128,7 @@ module "k8s" {
           # }] } } }
           resources = {
             requests = {}
-            limits = {}
+            limits   = {}
           }
           # resources = {
           #   requests = { "nvidia.com/gpu" = "4" }
@@ -137,7 +137,7 @@ module "k8s" {
         }
         index = {
           # tolerations      = [{ effect = "NoSchedule", operator = "Exists", key = "nvidia.com/gpu" }]
-          tolerations      = []
+          tolerations = []
           # runtimeClassName = "nvidia"
           runtimeClassName = ""
           # affinity = { nodeAffinity = { requiredDuringSchedulingIgnoredDuringExecution = { nodeSelectorTerms = [
@@ -153,7 +153,7 @@ module "k8s" {
           # }
           resources = {
             requests = {}
-            limits = {}
+            limits   = {}
           }
         }
         ingress = {
