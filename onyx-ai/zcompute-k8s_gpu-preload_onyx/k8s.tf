@@ -65,50 +65,47 @@ module "k8s" {
       chart           = "ollama"
       version         = "1.12.0"
       namespace       = "ollama"
-      config = {
-        ollama = {
-          gpu    = { enabled = true, type = "nvidia" }
-          # gpu    = { enabled = false, type = "nvidia" }
-          models = { pull = ["llama3.1:8b-instruct-q8_0"], run = ["llama3.1:8b-instruct-q8_0"] }
-          # models = { pull = [""], run = [""] }
-        }
-        replicaCount = 1
-        extraEnv = [{
-          name  = "OLLAMA_KEEP_ALIVE"
-          value = "-1"
-        }]
-        resources = {
-          # requests = { cpu = "4", memory = "15Gi", "nvidia.com/gpu" = "8" }
-          # limits   = { cpu = "8", memory = "20Gi", "nvidia.com/gpu" = "8" }
-          requests = { cpu = "4", memory = "15Gi" }
-          limits   = { cpu = "8", memory = "20Gi" }
-        }
-        persistentVolume = { enabled = true, size = "200Gi" }
-        # runtimeClassName = "nvidia"
-        runtimeClassName = ""
-        # affinity = {
-        #   nodeAffinity = {
-        #     requiredDuringSchedulingIgnoredDuringExecution = {
-        #       nodeSelectorTerms = [
-        #         {
-        #           matchExpressions = [{
-        #             key      = "nvidia.com/device-plugin.config"
-        #             operator = "In"
-        #             values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
-        #           }]
-        #         }
-        #       ]
-        #     }
-        #   }
-        # }
-      }
+      #config = {
+      #  ollama = {
+      #    gpu    = { enabled = true, type = "nvidia" }
+      #    # gpu    = { enabled = false, type = "nvidia" }
+      #    models = { pull = ["llama3.1:8b-instruct-q8_0"], run = ["llama3.1:8b-instruct-q8_0"] }
+      #    # models = { pull = [""], run = [""] }
+      #  }
+      #  replicaCount = 1
+      #  extraEnv = [{
+      #    name  = "OLLAMA_KEEP_ALIVE"
+      #    value = "-1"
+      #  }]
+      #  resources = {
+      #    # requests = { cpu = "4", memory = "15Gi", "nvidia.com/gpu" = "8" }
+      #    # limits   = { cpu = "8", memory = "20Gi", "nvidia.com/gpu" = "8" }
+      #    requests = { cpu = "4", memory = "15Gi" }
+      #    limits   = { cpu = "8", memory = "20Gi" }
+      #  }
+      #  persistentVolume = { enabled = true, size = "200Gi" }
+      #  # runtimeClassName = "nvidia"
+      #  runtimeClassName = ""
+      #  # affinity = {
+      #  #   nodeAffinity = {
+      #  #     requiredDuringSchedulingIgnoredDuringExecution = {
+      #  #       nodeSelectorTerms = [
+      #  #         {
+      #  #           matchExpressions = [{
+      #  #             key      = "nvidia.com/device-plugin.config"
+      #  #             operator = "In"
+      #  #             values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
+      #  #           }]
+      #  #         }
+      #  #       ]
+      #  #     }
+      #  #   }
+      #  # }
+      #}
     }
     onyx = {
       order           = 35
       wait            = false
-      # repository_name = "onyx-dot-app"
-      # repository_url  = "https://github.com/onyx-dot-app/onyx/tree/main/deployment/helm/charts"
-      # version         = "0.2.1"
       repository_name = "guangchuanh"
       repository_url  = "https://guangchuanh.github.io/helm-charts"
       # repository_name = "zadarastorage"
