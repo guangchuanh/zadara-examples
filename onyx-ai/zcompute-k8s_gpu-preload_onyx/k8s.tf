@@ -15,8 +15,7 @@ variable "k8s_version" {
 
 module "k8s" {
   #source = "../../../terraform-zcompute-k8s"
-  #source = "github.com/zadarastorage/terraform-zcompute-k8s?ref=main"
-  source = "github.com/guangchuanh/terraform-zcompute-k8s?ref=main"
+  source = "github.com/zadarastorage/terraform-zcompute-k8s?ref=main"
   # It's recommended to change `main` to a specific release version to prevent unexpected changes
 
   vpc_id  = module.vpc.vpc_id
@@ -27,6 +26,96 @@ module "k8s" {
   cluster_name    = var.k8s_name
   cluster_version = var.k8s_version
   cluster_helm = {
+    zadara-aws-config = {
+      order           = 10
+      wait            = true
+      repository_name = "guangchuanh"
+      repository_url = "https://guangchuanh.github.io/helm-charts"
+      chart          = "zadara-aws-config"
+      version        = "0.0.3"
+      namespace      = "kube-system"
+      config = {
+        # -- Default root endpoint
+        endpointUrl = "${var.zcompute_endpoint_url}"
+        # -- cloud.conf `[Global]` stanza
+        global = {}
+
+        serviceOverrides = {
+          ec2 = { Url = "${var.zcompute_endpoint_url}/api/v2/aws/ec2" }
+          autoscaling = { Url = "${var.zcompute_endpoint_url}/api/v2/aws/autoscaling" }
+          elasticloadbalancing = { Url = "${var.zcompute_endpoint_url}/api/v2/aws/elbv2" }
+        }
+      }
+    }
+    aws-load-balancer-controller = {
+      order           = 15
+      wait            = true
+      repository_name = "eks-charts"
+      repository_url  = "https://aws.github.io/eks-charts"
+      chart           = "aws-load-balancer-controller"
+      version         = "1.7.2"
+      namespace       = "kube-system"
+      config = {
+        clusterName = var.k8s_name
+        controllerConfig = {
+          featureGates = {
+            ALBSingleSubnet        = true
+            SubnetsClusterTagCheck = false
+          }
+        }
+        ingressClassConfig = { default = true }
+        enableShield       = false
+        enableWaf          = false
+        enableWafv2        = false
+        awsApiEndpoints = join(",", [
+          format("ec2=%s/api/v2/aws/ec2", var.zcompute_endpoint_url),
+          format("elasticloadbalancing=%s/api/v2/aws/elbv2", var.zcompute_endpoint_url),
+          format("acm=%s/api/v2/aws/acm", var.zcompute_endpoint_url),
+          format("sts=%s/api/v2/aws/sts", var.zcompute_endpoint_url),
+        ])
+        tolerations     = [{ effect = "NoSchedule", key = "", operator = "Exists" }, { effect = "NoExecute", key = "", operator = "Exists" }]
+      }
+    }
+    aws-ebs-csi-driver = {
+      order           = 13
+      repository_name = "aws-ebs-csi-driver"
+      repository_url  = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
+      chart           = "aws-ebs-csi-driver"
+      version         = "2.39.3"
+      namespace       = "kube-system"
+      config = {
+        storageClasses = [
+          {
+            name                 = "gp3"
+            volumeBindingMode    = "WaitForFirstConsumer"
+            allowVolumeExpansion = true
+            parameters = {
+              type               = "gp2"
+              tagSpecification_1 = "Name={{ .PVName }}"
+            }
+            mountOptions = [
+              "errors=panic"
+            ]
+            annotations = {
+              "storageclass.kubernetes.io/is-default-class" = "true"
+            }
+          }
+        ]
+        volumeSnapshotClasses = [
+          {
+            name           = "gp3"
+            deletionPolicy = "Delete"
+            parameters = {
+              type               = "gp2"
+              tagSpecification_1 = "Name={{ .PVName }}"
+            }
+            annotations = {
+              "storageclass.kubernetes.io/is-default-class" = "true"
+            }
+          }
+        ]
+      }
+    }
     cert-manager = {
       order           = 31
       wait            = true
@@ -40,8 +129,8 @@ module "k8s" {
     cert-manager-clusterissuers = {
       order           = 32
       wait            = false
-      repository_name = "eric-zadara"
-      repository_url  = "https://eric-zadara.github.io/helm_charts"
+      repository_name = "guangchuanh"
+      repository_url  = "https://guangchuanh.github.io/helm-charts"
       chart           = "cert-manager-clusterissuers"
       version         = "0.0.1"
       namespace       = "cert-manager"
@@ -68,9 +157,7 @@ module "k8s" {
       #config = {
       #  ollama = {
       #    gpu    = { enabled = true, type = "nvidia" }
-      #    # gpu    = { enabled = false, type = "nvidia" }
       #    models = { pull = ["llama3.1:8b-instruct-q8_0"], run = ["llama3.1:8b-instruct-q8_0"] }
-      #    # models = { pull = [""], run = [""] }
       #  }
       #  replicaCount = 1
       #  extraEnv = [{
@@ -78,29 +165,27 @@ module "k8s" {
       #    value = "-1"
       #  }]
       #  resources = {
-      #    # requests = { cpu = "4", memory = "15Gi", "nvidia.com/gpu" = "8" }
-      #    # limits   = { cpu = "8", memory = "20Gi", "nvidia.com/gpu" = "8" }
-      #    requests = { cpu = "4", memory = "15Gi" }
-      #    limits   = { cpu = "8", memory = "20Gi" }
+      #    requests = { cpu = "4", memory = "15Gi", "nvidia.com/gpu" = "8" }
+      #    limits   = { cpu = "8", memory = "20Gi", "nvidia.com/gpu" = "8" }
       #  }
       #  persistentVolume = { enabled = true, size = "200Gi" }
-      #  # runtimeClassName = "nvidia"
+      #  runtimeClassName = "nvidia"
       #  runtimeClassName = ""
-      #  # affinity = {
-      #  #   nodeAffinity = {
-      #  #     requiredDuringSchedulingIgnoredDuringExecution = {
-      #  #       nodeSelectorTerms = [
-      #  #         {
-      #  #           matchExpressions = [{
-      #  #             key      = "nvidia.com/device-plugin.config"
-      #  #             operator = "In"
-      #  #             values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
-      #  #           }]
-      #  #         }
-      #  #       ]
-      #  #     }
-      #  #   }
-      #  # }
+      #  affinity = {
+      #    nodeAffinity = {
+      #      requiredDuringSchedulingIgnoredDuringExecution = {
+      #        nodeSelectorTerms = [
+      #          {
+      #            matchExpressions = [{
+      #              key      = "nvidia.com/device-plugin.config"
+      #              operator = "In"
+      #              values   = ["tesla-25b6", "tesla-2235", "tesla-27b8", "tesla-26b9"]
+      #            }]
+      #          }
+      #        ]
+      #      }
+      #    }
+      #  }
       #}
     }
     onyx = {
@@ -242,14 +327,14 @@ module "k8s" {
     #     "k8s.io/cluster-autoscaler/node-template/resources/nvidia.com/gpu" = "17"
     #     "nvidia.com/device-plugin.config"                                  = "tesla-25b6"
     #   }
-    #   # cloudinit_config = [
-    #   #   {
-    #   #     order        = 11
-    #   #     filename     = "setup-gpu.sh"
-    #   #     content_type = "text/x-shellscript"
-    #   #     content      = file("${path.module}/files/setup-gpu.sh")
-    #   #   }
-    #   # ]
+    #   cloudinit_config = [
+    #     {
+    #       order        = 11
+    #       filename     = "setup-gpu.sh"
+    #       content_type = "text/x-shellscript"
+    #       content      = file("${path.module}/files/setup-gpu.sh")
+    #     }
+    #   ]
     # }
   }
 }
